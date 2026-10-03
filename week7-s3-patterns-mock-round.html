@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Week 7 S3: Patterns & Mock Coding Round</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=Caveat:wght@600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --out:#E9EEF7; --paper:#FBFCFE; --grid:#E4EBF6; --ink:#14213D; --muted:#5B6782;
+  --blue:#2251CC; --red:#D62839; --green:#12816F; --hl:#FFE45C; --card:#FFFFFF; --line:#C9D4E8;
+  --code:#14213D; --codeink:#E8EEF8; --soft-blue:#E6EDFF; --soft-green:#DDF3EE; --soft-red:#FCE4E7;
+  --sans:'Bricolage Grotesque', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --hand:'Caveat', 'Comic Sans MS', 'Segoe Print', cursive;
+  --mono:'JetBrains Mono', ui-monospace, Consolas, 'Courier New', monospace;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --out:#070D18; --paper:#0F1A2E; --grid:#18263F; --ink:#E8EEF8; --muted:#9AA8C4;
+    --blue:#7FA2FF; --red:#FF6B7A; --green:#4FD1B5; --hl:rgba(232,197,71,.42); --card:#14223A; --line:#2A3B5C;
+    --code:#0A1222; --codeink:#E8EEF8; --soft-blue:#1A2A4E; --soft-green:#123A36; --soft-red:#3A1A24;
+  }
+}
+:root[data-theme="dark"]{
+  --out:#070D18; --paper:#0F1A2E; --grid:#18263F; --ink:#E8EEF8; --muted:#9AA8C4;
+  --blue:#7FA2FF; --red:#FF6B7A; --green:#4FD1B5; --hl:rgba(232,197,71,.42); --card:#14223A; --line:#2A3B5C;
+  --code:#0A1222; --codeink:#E8EEF8; --soft-blue:#1A2A4E; --soft-green:#123A36; --soft-red:#3A1A24;
+}
+*,*::before,*::after{box-sizing:border-box}
+html,body{height:100%;margin:0}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{background:var(--out);color:var(--ink);font-family:var(--sans);overflow:hidden;-webkit-font-smoothing:antialiased}
+#viewport{position:relative;width:100%;height:100%;overflow:hidden}
+#stage{position:absolute;left:50%;top:50%;width:1280px;height:720px;transform-origin:center center;
+  background-color:var(--paper);
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:32px 32px;border-radius:10px;box-shadow:0 20px 60px rgba(20,33,61,.18);overflow:hidden}
+.slide{position:absolute;inset:0;padding:52px 72px 60px;display:none}
+.slide.active{display:block}
+h1,h2,h3,p{margin:0}
+h2{font-size:50px;font-weight:800;letter-spacing:-.02em;line-height:1.05;margin-bottom:22px;max-width:1000px}
+h3{font-size:26px;font-weight:700;letter-spacing:-.01em}
+.lead{font-size:26px;color:var(--muted);margin-bottom:22px;max-width:900px}
+.small{font-size:18px;color:var(--muted)}
+.hand{font-family:var(--hand);font-weight:700}
+.scribble{font-family:var(--hand);font-weight:700;color:var(--blue);font-size:38px;line-height:1.1}
+.red{color:var(--red)} .green{color:var(--green)} .blue{color:var(--blue)}
+.foot{position:absolute;left:72px;right:72px;bottom:20px;display:flex;justify-content:space-between;font-size:15px;color:var(--muted)}
+
+/* step reveal engine */
+[data-step]{opacity:0;transform:translateY(8px);transition:opacity .35s ease,transform .35s ease}
+[data-step].shown{opacity:1;transform:none}
+[data-only]{display:none}
+[data-only].only-on{display:block}
+.mark{background-image:linear-gradient(var(--hl),var(--hl));background-repeat:no-repeat;background-position:0 88%;background-size:100% 62%;transition:background-size .6s ease .2s;padding:0 .08em;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+[data-step]:not(.shown) .mark,.mark[data-step]:not(.shown){background-size:0% 62%}
+.sig{text-decoration:underline wavy var(--red) 3px;text-underline-offset:7px;color:var(--red);font-weight:700}
+
+/* code */
+pre.code{margin:0;background:var(--code);color:var(--codeink);font-family:var(--mono);font-size:20px;line-height:1.55;padding:22px 26px;border-radius:12px;overflow:hidden}
+pre.code .ln{display:block;min-height:1.55em}
+.tk-k{color:#8FB3FF;font-weight:600} .tk-s{color:#9BE7C4} .tk-n{color:#FFC979} .tk-c{color:#8592AD;font-style:italic}
+
+/* title */
+.s-title{display:none;flex-direction:column;justify-content:center;padding:64px 88px}
+.s-title.active{display:flex}
+.s-title .wk{font-size:24px;color:var(--muted);margin-bottom:14px}
+.s-title h1{font-size:96px;font-weight:800;letter-spacing:-.035em;line-height:.98;max-width:980px}
+.s-title .sub{font-size:28px;color:var(--muted);margin:18px 0 28px}
+.doodle{width:100%;max-width:1100px;height:auto}
+.doodle path{fill:none;stroke:var(--ink);stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.doodle path.acc{stroke:var(--blue)}
+.doodle text{font-family:var(--hand);font-size:34px;font-weight:700;fill:var(--ink);opacity:0}
+.slide.active .doodle path{stroke-dasharray:1200;stroke-dashoffset:1200;animation:draw 1.1s ease forwards}
+.slide.active .doodle text{animation:fade .4s ease forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
+@keyframes fade{to{opacity:1}}
+
+/* stories */
+.stories{list-style:none;padding:0;margin:0 0 26px;display:grid;gap:16px}
+.stories li{font-size:30px;background:var(--card);border:2px solid var(--line);border-radius:14px;padding:18px 24px;max-width:980px}
+.answer{font-size:34px;font-weight:700;margin-bottom:14px}
+
+/* month map */
+.weeks{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-top:6px}
+.wk-col{background:var(--card);border:2px solid var(--line);border-radius:14px;padding:18px 20px;min-height:400px}
+.wk-col h3{margin-bottom:4px}
+.wk-col .theme{font-size:17px;color:var(--muted);margin-bottom:14px}
+.wk-col ul{margin:0;padding-left:20px;font-size:21px;line-height:1.55}
+.wk-col:nth-child(1){border-top:8px solid var(--blue)}
+.wk-col:nth-child(2){border-top:8px solid var(--green)}
+.wk-col:nth-child(3){border-top:8px solid var(--red)}
+.wk-col:nth-child(4){border-top:8px solid var(--ink)}
+
+/* flip cards */
+.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.flip{all:unset;cursor:pointer;display:block;height:232px;perspective:900px;border-radius:14px}
+.flip:focus-visible{outline:3px solid var(--blue);outline-offset:3px}
+.flip-in{position:relative;width:100%;height:100%;transition:transform .55s ease;transform-style:preserve-3d}
+.flip.flipped .flip-in{transform:rotateY(180deg)}
+.face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:14px;padding:18px 18px;display:flex;flex-direction:column}
+.front{background:var(--card);border:2px dashed var(--line)}
+.front .q{font-size:15px;color:var(--muted);margin-bottom:6px}
+.front .sigtxt{font-family:var(--hand);font-weight:700;font-size:33px;line-height:1.05;color:var(--ink)}
+.back{background:var(--soft-blue);border:2px solid var(--blue);transform:rotateY(180deg)}
+.back .pat{font-size:26px;font-weight:800;color:var(--blue);line-height:1.1;margin-bottom:8px}
+.back .why{font-size:19px;line-height:1.35;flex:1}
+.back .bo{font-family:var(--mono);font-size:16px;color:var(--ink);font-weight:600}
+
+/* method */
+.steps6{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:16px 24px}
+.steps6 li{display:grid;grid-template-columns:58px 1fr;gap:14px;align-items:start;background:var(--card);border:2px solid var(--line);border-radius:14px;padding:16px 18px}
+.steps6 .n{font-family:var(--hand);font-size:50px;line-height:.9;color:var(--blue);text-align:center}
+.steps6 h3{margin-bottom:4px}
+.steps6 p{font-size:19px;color:var(--muted);line-height:1.35}
+
+/* two sum */
+.prob{background:var(--card);border:2px solid var(--line);border-radius:14px;padding:22px 26px;font-size:26px;line-height:1.4;margin-bottom:20px;max-width:1020px}
+.prob code,.inl{font-family:var(--mono);font-size:.86em;background:var(--soft-blue);padding:1px 7px;border-radius:6px}
+.qs{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.note-box{border-left:6px solid var(--blue);padding:8px 0 8px 18px}
+.note-box p{font-size:22px;line-height:1.65}
+.note-box .hand{font-size:30px;color:var(--blue)}
+
+.split{display:grid;grid-template-columns:1.4fr .6fr;gap:24px;align-items:start}
+.split pre.code{font-size:18px}
+.verdict{background:var(--card);border:2px solid var(--line);border-radius:14px;padding:20px 24px;font-size:23px;line-height:1.45}
+.big-o{font-family:var(--mono);font-weight:600;font-size:40px}
+
+/* trace */
+.trace-top{display:flex;align-items:center;gap:26px;margin-bottom:26px}
+.pill{font-family:var(--mono);font-size:22px;background:var(--ink);color:var(--paper);padding:8px 16px;border-radius:999px}
+.arr{display:flex;gap:12px}
+.cell{width:96px;height:96px;border:3px solid var(--ink);border-radius:12px;background:var(--card);display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;transition:background .3s,border-color .3s,transform .3s}
+.cell b{font-family:var(--mono);font-size:38px}
+.cell i{font-style:normal;font-size:15px;color:var(--muted);position:absolute;bottom:-26px}
+.cell.done{background:var(--grid);border-color:var(--muted);opacity:.75}
+.cell.cur{background:var(--soft-blue);border-color:var(--blue);transform:translateY(-6px)}
+.cell.cur::after{content:"i";position:absolute;top:-40px;font-family:var(--hand);font-size:34px;font-weight:700;color:var(--blue)}
+.cell.hit{background:var(--soft-green);border-color:var(--green);opacity:1;transform:translateY(-6px)}
+.trace-body{display:grid;grid-template-columns:1fr 360px;gap:32px;margin-top:48px}
+.msg{font-size:28px;line-height:1.4;min-height:170px}
+.msg .partner{font-family:var(--mono);color:var(--red);font-weight:600}
+.map{background:var(--card);border:2px solid var(--line);border-radius:14px;padding:16px 20px}
+.map h3{font-size:20px;margin-bottom:10px}
+.map .row{font-family:var(--mono);font-size:24px;padding:6px 10px;border-radius:8px;transition:background .3s}
+.map .row.hit{background:var(--soft-green);color:var(--green);font-weight:600}
+.map .empty{font-size:18px;color:var(--muted)}
+
+/* compare table */
+.cmp{width:100%;border-collapse:collapse;font-size:22px}
+.cmp th,.cmp td{text-align:left;padding:12px 14px;border-bottom:2px solid var(--line)}
+.cmp th{font-size:17px;color:var(--muted);font-weight:600}
+.cmp td.o{font-family:var(--mono);font-weight:600}
+
+/* think aloud */
+.say{display:grid;grid-template-columns:1fr 1fr;gap:14px 22px}
+.say div{background:var(--card);border:2px solid var(--line);border-radius:14px;padding:14px 18px}
+.say .when{font-size:16px;color:var(--muted);margin-bottom:4px}
+.say .line{font-family:var(--hand);font-weight:700;font-size:30px;line-height:1.1;color:var(--ink)}
+
+/* rules */
+.rules{list-style:none;padding:0;margin:0;display:grid;gap:14px;max-width:1000px}
+.rules li{display:grid;grid-template-columns:52px 1fr;align-items:center;font-size:26px;background:var(--card);border:2px solid var(--line);border-radius:14px;padding:14px 18px}
+.rules .n{font-family:var(--hand);font-size:44px;color:var(--red);line-height:.8}
+
+/* mock problem */
+.gone{display:none!important}
+.mock-h{font-size:42px}
+.mock{display:block;max-width:1000px}
+.mock .prob{font-size:23px;margin-bottom:14px}
+.ex{font-family:var(--mono);font-size:19px;background:var(--soft-blue);border-radius:10px;padding:10px 14px;margin-top:10px;line-height:1.5}
+.tag{display:inline-block;font-size:15px;font-weight:600;padding:3px 10px;border-radius:999px;background:var(--soft-green);color:var(--green);margin-left:10px;vertical-align:middle}
+.hints{display:grid;gap:8px}
+.hint{font-size:20px;line-height:1.35;padding:8px 14px;border-left:5px solid var(--blue);background:var(--card);border-radius:0 10px 10px 0}
+.hint b{color:var(--blue)}
+.sol pre.code{font-size:17px;padding:14px 18px;line-height:1.45}
+.cx{margin-top:10px;font-size:21px}
+.timer{background:var(--card);border:2px solid var(--line);border-radius:16px;padding:18px;text-align:center}
+.t-face{font-family:var(--mono);font-size:72px;font-weight:600;letter-spacing:-.03em;line-height:1}
+.t-face.low{color:var(--red)}
+.t-label{font-size:16px;color:var(--muted);margin:8px 0 12px;min-height:20px}
+.t-row{display:flex;gap:8px;justify-content:center;margin-top:8px}
+.tbtn{font-family:var(--sans);font-size:17px;font-weight:600;border:2px solid var(--ink);background:transparent;color:var(--ink);border-radius:999px;padding:7px 16px;cursor:pointer}
+.tbtn.main{background:var(--ink);color:var(--paper)}
+.tbtn:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+.timer .small{margin-top:14px;font-size:15px;line-height:1.35}
+
+/* quiz */
+.quiz{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+.qz{background:var(--card);border:2px solid var(--line);border-radius:14px;padding:16px 18px;display:flex;flex-direction:column}
+.qz .qn{font-family:var(--hand);font-size:28px;color:var(--blue);line-height:1}
+.qz p{font-size:20px;line-height:1.3;margin:4px 0 12px;min-height:78px}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.opt{font-family:var(--sans);font-size:16px;font-weight:600;padding:9px 8px;border-radius:10px;border:2px solid var(--line);background:var(--paper);color:var(--ink);cursor:pointer}
+.opt:focus-visible{outline:3px solid var(--blue)}
+.opt.right{background:var(--soft-green);border-color:var(--green);color:var(--green)}
+.opt.wrong{background:var(--soft-red);border-color:var(--red);color:var(--red);text-decoration:line-through}
+.qz .why{font-size:15px;color:var(--muted);margin-top:10px;visibility:hidden}
+.qz.answered .why{visibility:visible}
+
+/* rubric */
+.rubric{display:grid;gap:10px;max-width:1080px}
+.rubric div{display:grid;grid-template-columns:230px 1fr;gap:18px;align-items:center;background:var(--card);border:2px solid var(--line);border-radius:12px;padding:12px 18px;font-size:22px}
+.rubric b{font-size:24px}
+
+/* assignment */
+.assign{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px}
+.assign .box{background:var(--card);border:2px solid var(--line);border-radius:14px;padding:16px 20px}
+.assign h3{font-size:22px;margin-bottom:8px}
+.assign ol,.assign ul{margin:0;padding-left:24px;font-size:20px;line-height:1.5}
+.lc{font-family:var(--mono);font-size:14px;color:var(--muted)}
+
+/* wrap */
+.done-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:28px}
+.done-grid div{border:2px solid var(--line);border-radius:12px;padding:14px 16px;background:var(--card);font-size:19px;line-height:1.35}
+.done-grid b{display:block;font-size:22px;margin-bottom:4px}
+.next{background:var(--ink);color:var(--paper);border-radius:16px;padding:24px 30px;display:grid;grid-template-columns:auto 1fr;gap:28px;align-items:center}
+.next .hand{font-size:44px;color:var(--hl)}
+.next p{font-size:22px;line-height:1.4}
+
+/* ink */
+#ink{position:absolute;inset:0;width:1280px;height:720px;z-index:20;pointer-events:none;touch-action:none}
+body.drawing #ink{pointer-events:auto;cursor:crosshair}
+#progress{position:absolute;left:0;bottom:0;height:5px;background:var(--blue);z-index:21;transition:width .3s}
+#stepdots{position:absolute;left:72px;bottom:22px;display:flex;gap:5px;z-index:21}
+#stepdots span{width:8px;height:8px;border-radius:50%;background:var(--line)}
+#stepdots span.on{background:var(--blue)}
+
+/* chrome outside stage */
+#bar{position:fixed;right:max(12px,env(safe-area-inset-right,0px));bottom:calc(12px + env(safe-area-inset-bottom,0px));display:flex;gap:6px;align-items:center;z-index:50;opacity:.35;transition:opacity .2s;flex-wrap:wrap;justify-content:flex-end}
+#bar.hidden{display:none}
+#bar:hover,#bar:focus-within,body.drawing #bar{opacity:1}
+#bar button{font-family:var(--sans);font-size:14px;font-weight:600;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:7px 12px;cursor:pointer}
+#bar button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+#bar .pens{display:none;gap:6px}
+body.drawing #bar .pens{display:flex}
+#bar .sw{width:28px;height:28px;padding:0;border-radius:50%;border:3px solid var(--card);outline:1px solid var(--line)}
+#bar .sw[aria-pressed="true"]{outline:3px solid var(--ink)}
+#counter{font-size:14px;color:var(--muted);padding:0 6px;background:var(--card);border-radius:999px;padding:7px 10px;border:1px solid var(--line)}
+#notes{position:fixed;left:12px;right:12px;bottom:calc(60px + env(safe-area-inset-bottom,0px));max-width:760px;max-height:34vh;overflow:auto;background:var(--ink);color:var(--paper);border-radius:14px;padding:16px 20px;font-size:16px;line-height:1.5;z-index:49;display:none}
+body.show-notes #notes{display:block}
+#notes b{color:var(--hl)}
+#help{position:fixed;inset:0;background:rgba(10,18,34,.6);display:none;align-items:center;justify-content:center;z-index:60}
+#help.open{display:flex}
+#help .box{background:var(--paper);color:var(--ink);border-radius:16px;padding:24px 30px;max-width:520px;width:calc(100% - 32px);font-size:17px;line-height:1.7}
+#help kbd{font-family:var(--mono);font-size:14px;border:1px solid var(--line);border-bottom-width:3px;border-radius:6px;padding:1px 7px;background:var(--card)}
+.notes{display:none}
+
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{transition:none!important;animation-duration:.001s!important}
+}
+</style>
+</head>
+<body>
+<div id="viewport">
+<div id="stage" aria-live="polite">
+
+<!-- 1 -->
+<section class="slide s-title">
+  <p class="wk">Week 7, Session 3 / DSA with JavaScript</p>
+  <h1>Patterns &amp; Mock Coding Round</h1>
+  <p class="sub">The last DSA session of the month</p>
+  <svg class="doodle" viewBox="0 0 1100 150" aria-hidden="true" id="doodle"></svg>
+  <p class="scribble" data-step="1" style="margin-top:14px">Tonight: look at a problem you've never seen and pick the right tool.</p>
+</section>
+
+<!-- 2 -->
+<section class="slide">
+  <h2>Same pattern, different costume</h2>
+  <p class="lead">Read these three. What do they have in common?</p>
+  <ul class="stories">
+    <li data-step="1">Find the highest total sales in any <span data-from="4:sig">7 consecutive days</span>.</li>
+    <li data-step="2">Find the longest <span data-from="4:sig">substring</span> with no repeated characters.</li>
+    <li data-step="3">Report the average temperature for every <span data-from="4:sig">3-hour block</span>.</li>
+  </ul>
+  <p class="answer" data-step="4"><span class="mark">All three are Sliding Window.</span> The signal: a continuous run of neighbours.</p>
+  <p class="scribble" data-step="5">Interviewers change the story. The pattern stays.</p>
+</section>
+
+<!-- 3 -->
+<section class="slide">
+  <h2>Everything you can use now</h2>
+  <div class="weeks">
+    <div class="wk-col" data-step="1"><h3>Complexity &amp; linear structures</h3>
+      <ul><li>Big-O analysis</li><li>Two pointers</li><li>Sliding window</li><li>Prefix sums</li><li>Stack &amp; queue</li><li>Monotonic stack</li></ul></div>
+    <div class="wk-col" data-step="2"><h3>Hashing, recursion, sorting</h3>
+      <ul><li>Hash map &amp; set</li><li>Recursion</li><li>Backtracking</li><li>Merge &amp; quick sort</li><li>Binary search</li></ul></div>
+    <div class="wk-col" data-step="3"><h3>Pointers, trees, graphs</h3>
+      <ul><li>Fast &amp; slow pointers</li><li>Tree DFS &amp; BFS</li><li>BST rules</li><li>Heap / priority queue</li><li>Graph BFS &amp; DFS</li><li>Topological sort</li></ul></div>
+    <div class="wk-col" data-step="4"><h3>Choices &amp; memory</h3>
+      <ul><li>Greedy</li><li>Intervals</li><li>Memoization</li><li>Tabulation</li><li><b>Tonight: choosing the right one</b></li></ul></div>
+  </div>
+</section>
+
+<!-- 4 -->
+<section class="slide">
+  <h2>Signal decoder, round 1</h2>
+  <div class="cards">
+    <button class="flip"><div class="flip-in"><div class="face front"><span class="q">If you read…</span><span class="sigtxt">"sorted array" + "find a pair"</span></div><div class="face back"><span class="pat">Two pointers</span><span class="why">Start at both ends, move inward based on the sum.</span><span class="bo">O(n) time, O(1) space</span></div></div></button>
+    <button class="flip"><div class="flip-in"><div class="face front"><span class="q">If you read…</span><span class="sigtxt">"consecutive", "subarray", "substring"</span></div><div class="face back"><span class="pat">Sliding window</span><span class="why">Add the incoming item, drop the outgoing one.</span><span class="bo">O(n) time</span></div></div></button>
+    <button class="flip"><div class="flip-in"><div class="face front"><span class="q">If you read…</span><span class="sigtxt">"seen before?", "count", "duplicate"</span></div><div class="face back"><span class="pat">Hash map / set</span><span class="why">O(1) lookups turn a nested search into one pass.</span><span class="bo">O(n) time, O(n) space</span></div></div></button>
+    <button class="flip"><div class="flip-in"><div class="face front"><span class="q">If you read…</span><span class="sigtxt">"many range-sum queries"</span></div><div class="face back"><span class="pat">Prefix sums</span><span class="why">Build once, then any range is a subtraction.</span><span class="bo">O(n) build, O(1) query</span></div></div></button>
+    <button class="flip"><div class="flip-in"><div class="face front"><span class="q">If you read…</span><span class="sigtxt">"matching brackets", "nested", "undo"</span></div><div class="face back"><span class="pat">Stack</span><span class="why">The most recent item must be handled first (LIFO).</span><span class="bo">O(n) time, O(n) space</span></div></div></button>
+    <button class="flip"><div class="flip-in"><div class="face front"><span class="q">If you read…</span><span class="sigtxt">"next greater", "next smaller"</span></div><div class="face back"><span class="pat">Monotonic stack</span><span class="why">Keep unresolved items; each is pushed and popped once.</span><span class="bo">O(n) time</span></div></div></button>
+    <button class="flip"><div class="flip-in"><div class="face front"><span class="q">If you read…</span><span class="sigtxt">"cycle in a list", "find the middle"</span></div><div class="face back"><span class="pat">Fast &amp; slow pointers</span><span class="why">One moves 2 steps, one moves 1 step.</span><span class="bo">O(n) time, O(1) space</span></div></div></button>
+    <button class="flip"><div class="flip-in"><div class="face front"><span class="q">If you read…</span><span class="sigtxt">"sorted" + "search" or "smallest that works"</span></div><div class="face back"><span class="pat">Binary search</span><span class="why">Throw away half the options every step.</span><span class="bo">O(log n) time</span></div></div></button>
+  </div>
+</section>
+
+<!-- 5 -->
+<section class="slide">
+  <h2>Signal decoder, round 2</h2>
+  <div class="cards">
+    <button class="flip"><div class="flip-in"><div class="face front"><span class="q">If you read…</span><span class="sigtxt">"all subsets", "combinations", "permutations"</span></div><div class="face back"><span class="pat">Backtracking</span><span class="why">Choose, explore, un-choose.</span><span class="bo">Exponential, e.g. O(2ⁿ)</span></div></div></button>
+    <button class="flip"><div class="flip-in"><div class="face front"><span class="q">If you read…</span><span class="sigtxt">"fewest steps", "level by level"</span></div><div class="face back"><span class="pat">BFS with a queue</span><span class="why">First time you reach a node is the shortest unweighted path.</span><span class="bo">O(V + E)</span></div></div></button>
+    <button class="flip"><div class="flip-in"><div class="face front"><span class="q">If you read…</span><span class="sigtxt">"islands", "connected groups", "every path"</span></div><div class="face back"><span class="pat">DFS</span><span class="why">Go deep, mark visited, count each new start.</span><span class="bo">O(V + E)</span></div></div></button>
+    <button class="flip"><div class="flip-in"><div class="face front"><span class="q">If you read…</span><span class="sigtxt">"prerequisites", "order of tasks"</span></div><div class="face back"><span class="pat">Topological sort</span><span class="why">Process nodes with no remaining dependencies first.</span><span class="bo">O(V + E)</span></div></div></button>
+    <button class="flip"><div class="flip-in"><div class="face front"><span class="q">If you read…</span><span class="sigtxt">"top k", "k-th largest", "cheapest next"</span></div><div class="face back"><span class="pat">Heap</span><span class="why">Always gives the min or max in log time.</span><span class="bo">O(n log k)</span></div></div></button>
+    <button class="flip"><div class="flip-in"><div class="face front"><span class="q">If you read…</span><span class="sigtxt">"max non-overlapping", "earliest finish"</span></div><div class="face back"><span class="pat">Greedy</span><span class="why">Sort, then take the safe choice. Prove it's safe.</span><span class="bo">O(n log n) for the sort</span></div></div></button>
+    <button class="flip"><div class="flip-in"><div class="face front"><span class="q">If you read…</span><span class="sigtxt">"count the ways", "min cost", choices overlap</span></div><div class="face back"><span class="pat">Dynamic programming</span><span class="why">Define the state, store answers, reuse them.</span><span class="bo">States × transitions</span></div></div></button>
+    <button class="flip"><div class="flip-in"><div class="face front"><span class="q">If you read…</span><span class="sigtxt">"binary search tree" is given</span></div><div class="face back"><span class="pat">Use the BST rule</span><span class="why">Left &lt; Root &lt; Right. Inorder visits values sorted.</span><span class="bo">O(h) per search</span></div></div></button>
+  </div>
+</section>
+
+<!-- 6 -->
+<section class="slide">
+  <h2>The 6-step method for any new problem</h2>
+  <ol class="steps6">
+    <li data-step="1"><span class="n">1</span><div><h3>Understand</h3><p>Restate it in your words. Ask about input size, empty input, duplicates, negatives.</p></div></li>
+    <li data-step="2"><span class="n">2</span><div><h3>Examples</h3><p>Solve one normal case and one edge case by hand.</p></div></li>
+    <li data-step="3"><span class="n">3</span><div><h3>Brute force</h3><p>Say the simplest correct idea and its Big-O out loud.</p></div></li>
+    <li data-step="4"><span class="n">4</span><div><h3>Pattern</h3><p>Look for signals. Name the pattern and why it fits.</p></div></li>
+    <li data-step="5"><span class="n">5</span><div><h3>Code</h3><p>Write it cleanly. Narrate what each block does.</p></div></li>
+    <li data-step="6"><span class="n">6</span><div><h3>Test &amp; analyze</h3><p>Dry-run your example. State time and space, with a reason.</p></div></li>
+  </ol>
+  <p class="scribble" data-step="7" style="margin-top:22px">Typing code is step 5, not step 1.</p>
+</section>
+
+<!-- 7 -->
+<section class="slide">
+  <h2>Live example: Two Sum</h2>
+  <div class="prob">Given an array <code>nums</code> and a number <code>target</code>, return the <b>indices</b> of the two numbers that add up to <code>target</code>.<div class="ex" style="margin-top:12px">nums = [3, 8, 4, 6, 1], target = 10 &nbsp;→&nbsp; [2, 3]</div></div>
+  <div class="qs">
+    <div class="note-box" data-step="1"><p class="hand">Step 1: questions I'd ask</p>
+      <p>Is there always exactly one answer?<br>Can I use the same element twice?<br>Is the array sorted?</p></div>
+    <div class="note-box" data-step="2"><p class="hand">Step 4: signals</p>
+      <p><span class="sig">"pair"</span> + <span class="sig">unsorted</span> + must return <span class="sig">indices</span>.<br>Sorting would lose the indices.</p>
+      <p data-step="3" style="margin-top:6px">Better question: <span class="mark">"Have I already seen my partner?"</span></p></div>
+  </div>
+</section>
+
+<!-- 8 -->
+<section class="slide">
+  <h2>Step 3: brute force first</h2>
+  <div class="split">
+<pre class="code"><span class="ln" data-step="1">function twoSum(nums, target) {</span><span class="ln" data-step="2">  for (let i = 0; i &lt; nums.length; i++) {</span><span class="ln" data-step="3">    for (let j = i + 1; j &lt; nums.length; j++) {</span><span class="ln" data-step="4">      if (nums[i] + nums[j] === target) return [i, j];</span><span class="ln" data-step="2">    }</span><span class="ln" data-step="1">  }</span><span class="ln" data-step="1">  return [];</span><span class="ln" data-step="1">}</span></pre>
+    <div class="verdict">
+      <p data-step="4">Check every pair.</p>
+      <p data-step="5" style="margin-top:10px">Time <span class="big-o mark">O(n²)</span><br>Space <span class="big-o">O(1)</span></p>
+      <p data-step="6" style="margin-top:14px">Correct, but 100,000 numbers means about 5 billion checks.</p>
+      <p class="scribble" data-step="6" style="margin-top:10px;font-size:32px">Can we find the partner without a second loop?</p>
+    </div>
+  </div>
+</section>
+
+<!-- 9 -->
+<section class="slide">
+  <h2>Step 4: remember what you've seen</h2>
+  <div class="trace-top"><span class="pill">target = 10</span><span class="small">For each number, ask: is my partner already in the map?</span></div>
+  <div class="arr" style="margin-top:58px">
+    <div class="cell" data-at="1:cur" data-from="2:done"><b>3</b><i>0</i></div>
+    <div class="cell" data-at="2:cur" data-from="3:done"><b>8</b><i>1</i></div>
+    <div class="cell" data-at="3:cur" data-from="4:hit"><b>4</b><i>2</i></div>
+    <div class="cell" data-from="4:hit"><b>6</b><i>3</i></div>
+    <div class="cell"><b>1</b><i>4</i></div>
+  </div>
+  <div class="trace-body">
+    <div class="msg">
+      <p data-only="0">We walk left to right only once. Click to start.</p>
+      <p data-only="1">i = 0, value 3. Partner = 10 − 3 = <span class="partner">7</span>.<br>7 is not in the map. Store <b>3 → 0</b>.</p>
+      <p data-only="2">i = 1, value 8. Partner = <span class="partner">2</span>.<br>Not in the map. Store <b>8 → 1</b>.</p>
+      <p data-only="3">i = 2, value 4. Partner = <span class="partner">6</span>.<br>Not in the map. Store <b>4 → 2</b>.</p>
+      <p data-only="4">i = 3, value 6. Partner = <span class="partner">4</span>.<br><b class="green">4 is in the map at index 2.</b> Return [2, 3].</p>
+      <p data-only="5">One pass. Each map lookup is O(1).<br>Total: <span class="big-o mark">O(n)</span> time.</p>
+    </div>
+    <div class="map"><h3>Map: value → index</h3>
+      <p class="empty" data-only="0">empty</p>
+      <div class="row" data-step="1">3 → 0</div>
+      <div class="row" data-step="2">8 → 1</div>
+      <div class="row" data-step="3" data-from="4:hit">4 → 2</div>
+    </div>
+  </div>
+</section>
+
+<!-- 10 -->
+<section class="slide">
+  <h2>Steps 5 and 6: code it, then prove it</h2>
+  <div class="split">
+<pre class="code"><span class="ln">function twoSum(nums, target) {</span><span class="ln">  const seen = new Map(); // value -> index</span><span class="ln">  for (let i = 0; i &lt; nums.length; i++) {</span><span class="ln">    const partner = target - nums[i];</span><span class="ln">    if (seen.has(partner)) return [seen.get(partner), i];</span><span class="ln">    seen.set(nums[i], i);</span><span class="ln">  }</span><span class="ln">  return [];</span><span class="ln">}</span><span class="ln"> </span><span class="ln">console.log(twoSum([3, 8, 4, 6, 1], 10)); // [2, 3]</span></pre>
+    <div>
+      <table class="cmp">
+        <tr><th>Approach</th><th>Time</th><th>Space</th></tr>
+        <tr data-step="1"><td>Brute force</td><td class="o">O(n²)</td><td class="o">O(1)</td></tr>
+        <tr data-step="2"><td>Hash map</td><td class="o"><span class="mark">O(n)</span></td><td class="o">O(n)</td></tr>
+      </table>
+      <p class="verdict" data-step="3" style="margin-top:18px">We spent memory to save time. Same trade-off as prefix sums.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 11 -->
+<section class="slide">
+  <h2>Think out loud: what to actually say</h2>
+  <div class="say">
+    <div data-step="1"><p class="when">While understanding</p><p class="line">"Let me restate the problem to check I've got it…"</p></div>
+    <div data-step="2"><p class="when">Before optimizing</p><p class="line">"A simple approach is checking every pair. That's O(n²)."</p></div>
+    <div data-step="3"><p class="when">Spotting the pattern</p><p class="line">"It asks for a pair and isn't sorted, so I'll use a map."</p></div>
+    <div data-step="4"><p class="when">While coding</p><p class="line">"This map stores value to index so I can find the partner in O(1)."</p></div>
+    <div data-step="5"><p class="when">Testing</p><p class="line">"Let me dry-run [3, 8, 4, 6, 1] with target 10…"</p></div>
+    <div data-step="6"><p class="when">Finishing</p><p class="line">"Time is O(n): one pass. Space is O(n): the map."</p></div>
+  </div>
+  <p class="scribble" data-step="7" style="margin-top:18px">Interviewers grade your thinking, not only your final code.</p>
+</section>
+
+<!-- 12 -->
+<section class="slide">
+  <h2>Rapid fire: name the pattern</h2>
+  <div class="quiz">
+    <div class="qz"><span class="qn">1</span><p>Longest substring without repeating characters</p><div class="opts"><button class="opt">Stack</button><button class="opt" data-ok>Sliding window</button><button class="opt">Heap</button><button class="opt">DP</button></div><span class="why">A continuous run of characters.</span></div>
+    <div class="qz"><span class="qn">2</span><p>Can you finish all courses, given prerequisites?</p><div class="opts"><button class="opt">Two pointers</button><button class="opt">Greedy</button><button class="opt" data-ok>Topological sort</button><button class="opt">Prefix sums</button></div><span class="why">Dependencies between tasks.</span></div>
+    <div class="qz"><span class="qn">3</span><p>K-th largest element in a stream of numbers</p><div class="opts"><button class="opt" data-ok>Heap</button><button class="opt">Stack</button><button class="opt">BFS</button><button class="opt">Binary search</button></div><span class="why">Keep the top k with a min-heap.</span></div>
+    <div class="qz"><span class="qn">4</span><p>Fewest coins for amount 6 with coins [1, 3, 4]</p><div class="opts"><button class="opt">Greedy</button><button class="opt" data-ok>DP</button><button class="opt">Hash set</button><button class="opt">Two pointers</button></div><span class="why">Greedy gives 3 coins; DP finds 3 + 3.</span></div>
+    <div class="qz"><span class="qn">5</span><p>Days until a warmer temperature, for each day</p><div class="opts"><button class="opt">Queue</button><button class="opt">Sliding window</button><button class="opt" data-ok>Monotonic stack</button><button class="opt">Heap</button></div><span class="why">It's "next greater" in disguise.</span></div>
+    <div class="qz"><span class="qn">6</span><p>Count the islands in a grid of land and water</p><div class="opts"><button class="opt">Prefix sums</button><button class="opt" data-ok>DFS / BFS</button><button class="opt">Greedy</button><button class="opt">Stack</button></div><span class="why">Connected groups of cells.</span></div>
+  </div>
+</section>
+
+<!-- 13 -->
+<section class="slide">
+  <h2>How an interviewer scores you</h2>
+  <div class="rubric">
+    <div data-step="1"><b>Understanding</b><span>Asked clarifying questions and found the edge cases.</span></div>
+    <div data-step="2"><b>Approach</b><span>Gave a brute force, then improved it with a named pattern.</span></div>
+    <div data-step="3"><b>Code</b><span>Clean names, small steps, no dead code.</span></div>
+    <div data-step="4"><b>Complexity</b><span>Stated time and space with a reason.</span></div>
+    <div data-step="5"><b>Communication</b><span>Kept talking; the interviewer never had to guess.</span></div>
+  </div>
+  <p class="scribble" data-step="6" style="margin-top:22px">A working answer with no explanation can still lose to a talked-through one.</p>
+</section>
+
+<!-- 14 -->
+<section class="slide">
+  <h2>Demo time</h2>
+  <p class="lead">Slides done. Now we code everything in OneCompiler.</p>
+  <ol class="rules">
+    <li data-step="1"><span class="n">1</span>Two Sum: run brute force, then the hash map version, on the same input.</li>
+    <li data-step="2"><span class="n">2</span>Mock round: 3 problems. You try first, then I code it live.</li>
+    <li data-step="3"><span class="n">3</span>For every program: predict the output before I press Run.</li>
+  </ol>
+  <p class="scribble" data-step="4" style="margin-top:22px">Keep the 6 steps in front of you while we code.</p>
+</section>
+
+<!-- 15 -->
+<section class="slide">
+  <h2>Mock coding round: the rules</h2>
+  <ol class="rules">
+    <li data-step="1"><span class="n">1</span>3 problems, about 7 minutes each to try on your own.</li>
+    <li data-step="2"><span class="n">2</span>First minute: read only. No typing.</li>
+    <li data-step="3"><span class="n">3</span>Post your pattern in chat before you write code.</li>
+    <li data-step="4"><span class="n">4</span>Solve it in OneCompiler, then add time and space as a comment.</li>
+    <li data-step="5"><span class="n">5</span>Then I code it live in OneCompiler and we compare.</li>
+  </ol>
+  <p class="scribble" data-step="6" style="margin-top:20px">Stuck? Hints unlock one at a time. Using one is fine.</p>
+</section>
+
+<!-- 16 -->
+<section class="slide">
+  <h2 class="mock-h">Problem 1: Contains Duplicate <span class="tag">Warm-up</span></h2>
+  <div class="mock">
+    <div>
+      <div class="prob">Return <code>true</code> if any value appears at least twice in <code>nums</code>, otherwise <code>false</code>.
+        <div class="ex">[1, 2, 3, 1] → true<br>[1, 2, 3, 4] → false</div></div>
+      <div class="hints" data-from="3:gone">
+        <p class="hint" data-step="1"><b>Hint 1.</b> At each number, what question do you ask?</p>
+        <p class="hint" data-step="2"><b>Hint 2.</b> "Have I seen this before?" Which structure answers that in O(1)?</p>
+      </div>
+      <div class="sol" data-step="3" style="margin-top:10px">
+<pre class="code"><span class="ln">function containsDuplicate(nums) {</span><span class="ln">  const seen = new Set();</span><span class="ln">  for (const n of nums) {</span><span class="ln">    if (seen.has(n)) return true;</span><span class="ln">    seen.add(n);</span><span class="ln">  }</span><span class="ln">  return false;</span><span class="ln">}</span></pre></div>
+      <p class="cx" data-step="4">Hash set: <span class="mark">O(n) time, O(n) space</span>. Sorting first: O(n log n) time.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 17 -->
+<section class="slide">
+  <h2 class="mock-h">Problem 2: Best Time to Buy and Sell Stock</h2>
+  <div class="mock">
+    <div>
+      <div class="prob"><code>prices[i]</code> is the price on day i. Buy once, sell once later. Return the maximum profit, or 0.
+        <div class="ex">[7, 1, 5, 3, 6, 4] → 5 &nbsp;(buy at 1, sell at 6)</div></div>
+      <div class="hints" data-from="4:gone">
+        <p class="hint" data-step="1"><b>Hint 1.</b> Brute force tries every buy/sell pair. What's that Big-O?</p>
+        <p class="hint" data-step="2"><b>Hint 2.</b> Walking left to right, what one thing should you remember about the past?</p>
+        <p class="hint" data-step="3"><b>Hint 3.</b> The cheapest price so far. Today's profit = price − minSoFar.</p>
+      </div>
+      <div class="sol" data-step="4" style="margin-top:10px">
+<pre class="code"><span class="ln">function maxProfit(prices) {</span><span class="ln">  let minPrice = Infinity, best = 0;</span><span class="ln">  for (const p of prices) {</span><span class="ln">    minPrice = Math.min(minPrice, p);</span><span class="ln">    best = Math.max(best, p - minPrice);</span><span class="ln">  }</span><span class="ln">  return best;</span><span class="ln">}</span></pre></div>
+      <p class="cx" data-step="5">One pass, two variables: <span class="mark">O(n) time, O(1) space</span>.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 18 -->
+<section class="slide">
+  <h2 class="mock-h">Problem 3: Move Zeroes</h2>
+  <div class="mock">
+    <div>
+      <div class="prob">Move all <code>0</code>s to the end <b>in place</b>, keeping the order of the other numbers.
+        <div class="ex">[0, 1, 0, 3, 12] → [1, 3, 12, 0, 0]</div></div>
+      <div class="hints" data-from="3:gone">
+        <p class="hint" data-step="1"><b>Hint 1.</b> "In place" means no new array. Which pattern fits?</p>
+        <p class="hint" data-step="2"><b>Hint 2.</b> Two pointers: <span class="inl">read</span> scans everything, <span class="inl">write</span> marks the next spot for a non-zero.</p>
+      </div>
+      <div class="sol" data-step="3" style="margin-top:10px">
+<pre class="code"><span class="ln">function moveZeroes(nums) {</span><span class="ln">  let write = 0;</span><span class="ln">  for (let read = 0; read &lt; nums.length; read++) {</span><span class="ln">    if (nums[read] !== 0) {</span><span class="ln">      [nums[write], nums[read]] = [nums[read], nums[write]];</span><span class="ln">      write++;</span><span class="ln">    }</span><span class="ln">  }</span><span class="ln">  return nums;</span><span class="ln">}</span></pre></div>
+      <p class="cx" data-step="4"><span class="mark">O(n) time, O(1) space</span>. Each element is read once.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 19 -->
+<section class="slide">
+  <h2>Week 7 assignment</h2>
+  <p class="lead" style="margin-bottom:16px">Solve 15 greedy and DP problems, and build your personal pattern cheat sheet.</p>
+  <div class="assign">
+    <div class="box"><h3>Greedy (5)</h3><ol>
+      <li>Assign Cookies <span class="lc">455</span></li><li>Lemonade Change <span class="lc">860</span></li><li>Merge Intervals <span class="lc">56</span></li><li>Non-overlapping Intervals <span class="lc">435</span></li><li>Jump Game <span class="lc">55</span></li></ol></div>
+    <div class="box"><h3>DP (10)</h3><ol>
+      <li>Climbing Stairs <span class="lc">70</span></li><li>Min Cost Climbing Stairs <span class="lc">746</span></li><li>House Robber <span class="lc">198</span></li><li>Coin Change <span class="lc">322</span></li><li>Unique Paths <span class="lc">62</span></li><li>Minimum Path Sum <span class="lc">64</span></li><li>Longest Common Subsequence <span class="lc">1143</span></li><li>Longest Increasing Subsequence <span class="lc">300</span></li><li>Partition Equal Subset Sum <span class="lc">416</span></li><li>Fibonacci Number <span class="lc">509</span></li></ol></div>
+    <div class="box"><h3>For every problem</h3><ul>
+      <li>Pattern name and the signal you spotted</li><li>Approach in 2 lines</li><li>JavaScript solution</li><li>Time and space, with a reason</li></ul>
+      <h3 style="margin-top:14px">Cheat sheet</h3><ul><li>One row per pattern: signal, idea, Big-O, one example problem</li><li>Cover every pattern learned so far</li></ul></div>
+  </div>
+</section>
+
+<!-- 20 -->
+<section class="slide">
+  <h2>DSA month: done</h2>
+  <div class="done-grid">
+    <div><b>Complexity &amp; linear</b>Big-O, arrays, strings, stacks, queues</div>
+    <div><b>Hashing &amp; recursion</b>Hashing, recursion, sorting, binary search</div>
+    <div><b>Trees &amp; graphs</b>Linked lists, trees, heaps, graphs</div>
+    <div><b>Choices &amp; memory</b>Greedy, DP, pattern recognition</div>
+  </div>
+  <div class="next" data-step="1"><span class="hand">Next week</span><p><b>React fundamentals.</b> Components, props, JSX, lists and keys, set up with Vite. Everything you learned about JavaScript arrays and objects comes back immediately.</p></div>
+  <p class="scribble" data-step="2" style="margin-top:22px">Keep solving 2 problems a day. Patterns fade if you stop.</p>
+</section>
+
+<canvas id="ink" width="2560" height="1440" aria-hidden="true"></canvas>
+<div id="stepdots" aria-hidden="true"></div>
+<div id="progress"></div>
+</div>
+</div>
+
+<div id="bar">
+  <span class="pens">
+    <button class="sw" data-pen="blue" title="Blue pen" aria-label="Blue pen" style="background:#2251CC" aria-pressed="true"></button>
+    <button class="sw" data-pen="red" title="Red pen" aria-label="Red pen" style="background:#D62839" aria-pressed="false"></button>
+    <button class="sw" data-pen="green" title="Green pen" aria-label="Green pen" style="background:#12816F" aria-pressed="false"></button>
+    <button class="sw" data-pen="hl" title="Highlighter" aria-label="Highlighter" style="background:#FFE45C" aria-pressed="false"></button>
+    <button data-act="clear">Clear</button>
+  </span>
+  <button data-act="prev" aria-label="Previous">Back</button>
+  <span id="counter">1 / 20</span>
+  <button data-act="next" aria-label="Next">Next</button>
+  <button data-act="draw" aria-pressed="false">Draw</button>
+  <button data-act="full">Full screen</button>
+  <button data-act="help" aria-label="Keyboard shortcuts">?</button>
+</div>
+<div id="help"><div class="box">
+  <h3 style="margin-bottom:8px">Presenter keys</h3>
+  <kbd>→</kbd> <kbd>Space</kbd> <kbd>PgDn</kbd> or click: next reveal<br>
+  <kbd>←</kbd> <kbd>PgUp</kbd>: back one reveal<br>
+  <kbd>D</kbd> draw mode on/off, <kbd>1</kbd>–<kbd>4</kbd> pen colour, <kbd>C</kbd> clear drawing<br>
+  <kbd>B</kbd> hide/show the button bar<br>
+  <kbd>F</kbd> full screen, <kbd>T</kbd> light/dark, <kbd>Home</kbd>/<kbd>End</kbd> first/last slide<br>
+  <kbd>Esc</kbd> close this
+</div></div>
+
+<script>
+(function(){
+  const stage = document.getElementById('stage');
+  const slides = [...document.querySelectorAll('.slide')];
+  const total = slides.length;
+  let s = 0, step = 0;
+
+  /* ---- scale stage ---- */
+  function fit(){
+    const vp = document.getElementById('viewport');
+    const k = Math.min(vp.clientWidth / 1280, vp.clientHeight / 720) * 0.98;
+    stage.style.transform = 'translate(-50%,-50%) scale(' + k + ')';
+  }
+  window.addEventListener('resize', fit); fit();
+
+  /* ---- code highlighting ---- */
+  const KW = /(\/\/.*$)|("[^"]*"|'[^']*'|`[^`]*`)|\b(function|const|let|var|for|of|if|else|return|new|while|true|false|Infinity)\b|\b(\d+)\b/g;
+  function hl(text){
+    const esc = text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    return esc.replace(KW, (m,c,str,k,n)=> c?'<span class="tk-c">'+c+'</span>': str?'<span class="tk-s">'+str+'</span>': k?'<span class="tk-k">'+k+'</span>':'<span class="tk-n">'+n+'</span>');
+  }
+  document.querySelectorAll('pre.code .ln').forEach(l=>{ l.innerHTML = hl(l.textContent); });
+
+  /* ---- title doodle ---- */
+  (function(){
+    const svg = document.getElementById('doodle');
+    const labels = ['New problem','Spot signals','Name pattern','Code + Big-O'];
+    let html = '';
+    labels.forEach((t,i)=>{
+      const x = 10 + i*275, y = 30, w = 205, h = 84, j = (i%2?2:-2);
+      html += '<path class="'+(i===2?'acc':'')+'" style="animation-delay:'+(i*0.35)+'s" d="M'+(x+5)+' '+(y+j)+' L'+(x+w)+' '+(y-2)+' L'+(x+w+3)+' '+(y+h)+' L'+(x-2)+' '+(y+h+3)+' Z"/>';
+      html += '<text x="'+(x+w/2)+'" y="'+(y+h/2+12)+'" text-anchor="middle" style="animation-delay:'+(i*0.35+0.6)+'s">'+t+'</text>';
+      if(i<3){ const ax = x+w+14, bx = x+262;
+        html += '<path style="animation-delay:'+(i*0.35+0.5)+'s" d="M'+ax+' '+(y+h/2+2)+' Q'+((ax+bx)/2)+' '+(y+h/2-10)+' '+bx+' '+(y+h/2)+' M'+(bx-12)+' '+(y+h/2-10)+' L'+bx+' '+(y+h/2)+' L'+(bx-13)+' '+(y+h/2+9)+'"/>'; }
+    });
+    svg.innerHTML = html;
+  })();
+
+  /* ---- step engine ---- */
+  function nums(str){ return (str||'').match(/\d+/g)?.map(Number) || []; }
+  function maxStep(sl){
+    let m = 0;
+    sl.querySelectorAll('[data-step],[data-only],[data-at],[data-from]').forEach(e=>{
+      ['step','only','at','from'].forEach(a=>{ nums(e.dataset[a]).forEach(v=>{ m = Math.max(m,v); }); });
+    });
+    return m;
+  }
+  function pairs(str){ return (str||'').trim().split(/\s+/).filter(Boolean).map(p=>{ const [n,c]=p.split(':'); return [Number(n),c]; }); }
+
+  function render(){
+    slides.forEach((sl,i)=>sl.classList.toggle('active', i===s));
+    const sl = slides[s];
+    sl.querySelectorAll('[data-step]').forEach(e=>e.classList.toggle('shown', step >= Number(e.dataset.step)));
+    sl.querySelectorAll('[data-only]').forEach(e=>e.classList.toggle('only-on', nums(e.dataset.only).includes(step)));
+    sl.querySelectorAll('[data-at]').forEach(e=>{ pairs(e.dataset.at).forEach(([n,c])=>e.classList.remove(c)); pairs(e.dataset.at).forEach(([n,c])=>{ if(step===n) e.classList.add(c); }); });
+    sl.querySelectorAll('[data-from]').forEach(e=>{ pairs(e.dataset.from).forEach(([n,c])=>e.classList.toggle(c, step>=n)); });
+    const ms = maxStep(sl);
+    document.getElementById('stepdots').innerHTML = ms ? Array.from({length:ms},(_,i)=>'<span class="'+(i<step?'on':'')+'"></span>').join('') : '';
+    document.getElementById('progress').style.width = ((s + (ms? step/ms : 1)) / total * 100) + '%';
+    document.getElementById('counter').textContent = (s+1) + ' / ' + total;
+    try{ history.replaceState(null,'','#'+(s+1)); }catch(e){}
+  }
+  function go(i, atEnd){ saveInk(); s = Math.max(0, Math.min(total-1, i)); step = atEnd ? maxStep(slides[s]) : 0; loadInk(); render(); }
+  function next(){ if(step < maxStep(slides[s])){ step++; render(); } else if(s < total-1){ go(s+1); } }
+  function prev(){ if(step > 0){ step--; render(); } else if(s > 0){ go(s-1, true); } }
+
+  /* ---- flip cards & quiz ---- */
+  document.querySelectorAll('.flip').forEach(b=>b.addEventListener('click',()=>b.classList.toggle('flipped')));
+  document.querySelectorAll('.qz').forEach(q=>{
+    q.querySelectorAll('.opt').forEach(o=>o.addEventListener('click',()=>{
+      if(q.classList.contains('answered')) { q.classList.remove('answered'); q.querySelectorAll('.opt').forEach(x=>x.classList.remove('right','wrong')); return; }
+      q.classList.add('answered');
+      if(!o.hasAttribute('data-ok')) o.classList.add('wrong');
+      q.querySelector('[data-ok]').classList.add('right');
+    }));
+  });
+
+  /* ---- timers ---- */
+  let audioCtx = null;
+  function beep(){ try{ audioCtx = audioCtx || new (window.AudioContext||window.webkitAudioContext)(); [0,0.35,0.7].forEach(t=>{ const o=audioCtx.createOscillator(), g=audioCtx.createGain(); o.frequency.value=880; o.connect(g); g.connect(audioCtx.destination); g.gain.setValueAtTime(.15,audioCtx.currentTime+t); g.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+t+.3); o.start(audioCtx.currentTime+t); o.stop(audioCtx.currentTime+t+.3); }); }catch(e){} }
+  document.querySelectorAll('.timer').forEach(t=>{
+    let mins = Number(t.dataset.min)||10, left = mins*60, id = null;
+    t.innerHTML = '<div class="t-face">00:00</div><div class="t-label">Ready</div>'+
+      '<div class="t-row"><button class="tbtn main" data-t="go">Start</button><button class="tbtn" data-t="reset">Reset</button></div>'+
+      '<div class="t-row"><button class="tbtn" data-t="m-">−1 min</button><button class="tbtn" data-t="m+">+1 min</button></div>'+
+      '<p class="small">Read 1 min, post your pattern in chat, then code.</p>';
+    const face = t.querySelector('.t-face'), label = t.querySelector('.t-label'), go = t.querySelector('[data-t="go"]');
+    const show = ()=>{ const m = Math.floor(left/60), sec = left%60; face.textContent = String(m).padStart(2,'0')+':'+String(sec).padStart(2,'0'); face.classList.toggle('low', left<=60); };
+    const stop = ()=>{ clearInterval(id); id=null; go.textContent='Start'; };
+    t.addEventListener('click', e=>{
+      const b = e.target.closest('[data-t]'); if(!b) return;
+      const a = b.dataset.t;
+      if(a==='go'){ if(id){ stop(); label.textContent='Paused'; } else if(left>0){ go.textContent='Pause'; label.textContent='Coding time'; id=setInterval(()=>{ left--; show(); if(left<=0){ stop(); label.textContent="Time's up"; beep(); } },1000); } }
+      if(a==='reset'){ stop(); left=mins*60; label.textContent='Ready'; }
+      if(a==='m+'){ left+=60; if(!id) mins = Math.ceil(left/60); }
+      if(a==='m-'){ left=Math.max(0,left-60); if(!id) mins = Math.max(1,Math.ceil(left/60)); }
+      show();
+    });
+    show();
+  });
+
+  /* ---- ink layer ---- */
+  const canvas = document.getElementById('ink'), ctx = canvas.getContext('2d');
+  ctx.scale(2,2); ctx.lineCap='round'; ctx.lineJoin='round';
+  const inkStore = {};
+  const PENS = { blue:['#2251CC',4,1], red:['#D62839',4,1], green:['#12816F',4,1], hl:['#FFE45C',22,.4] };
+  let pen = 'blue', drawing = false, last = null;
+  function saveInk(){ inkStore[s] = ctx.getImageData(0,0,canvas.width,canvas.height); }
+  function loadInk(){ ctx.clearRect(0,0,1280,720); if(inkStore[s]) ctx.putImageData(inkStore[s],0,0); }
+  function pt(e){ const r = canvas.getBoundingClientRect(); return { x:(e.clientX-r.left)/r.width*1280, y:(e.clientY-r.top)/r.height*720 }; }
+  canvas.addEventListener('pointerdown', e=>{ drawing=true; last=pt(e); canvas.setPointerCapture(e.pointerId); });
+  canvas.addEventListener('pointermove', e=>{ if(!drawing) return; const p=pt(e), [c,w,a]=PENS[pen]; ctx.globalAlpha=a; ctx.strokeStyle=c; ctx.lineWidth=w; ctx.beginPath(); ctx.moveTo(last.x,last.y); ctx.lineTo(p.x,p.y); ctx.stroke(); last=p; });
+  ['pointerup','pointercancel','pointerleave'].forEach(ev=>canvas.addEventListener(ev,()=>{ drawing=false; }));
+  function setDraw(on){ document.body.classList.toggle('drawing', on); document.querySelector('[data-act="draw"]').setAttribute('aria-pressed', on); }
+  function setPen(p){ pen=p; document.querySelectorAll('[data-pen]').forEach(b=>b.setAttribute('aria-pressed', b.dataset.pen===p)); }
+  function clearInk(){ ctx.clearRect(0,0,1280,720); delete inkStore[s]; }
+
+  /* ---- chrome ---- */
+  function full(){ try{ if(!document.fullscreenElement) document.documentElement.requestFullscreen(); else document.exitFullscreen(); }catch(e){} }
+  function toggleNotes(){ const on = !document.body.classList.contains('show-notes'); document.body.classList.toggle('show-notes', on); document.querySelector('[data-act="notes"]').setAttribute('aria-pressed', on); }
+  function theme(){ const r=document.documentElement; const dark = r.dataset.theme ? r.dataset.theme==='dark' : matchMedia('(prefers-color-scheme: dark)').matches; r.dataset.theme = dark ? 'light' : 'dark'; }
+  const help = document.getElementById('help');
+  help.addEventListener('click', ()=>help.classList.remove('open'));
+  document.getElementById('bar').addEventListener('click', e=>{
+    const b = e.target.closest('button'); if(!b) return;
+    if(b.dataset.pen) setPen(b.dataset.pen);
+    const a = b.dataset.act;
+    if(a==='prev') prev(); if(a==='next') next(); if(a==='draw') setDraw(!document.body.classList.contains('drawing'));
+    if(a==='clear') clearInk(); if(a==='full') full(); if(a==='help') help.classList.add('open');
+    if(e.detail>0) b.blur();
+  });
+
+  stage.addEventListener('click', e=>{
+    if(document.body.classList.contains('drawing')) return;
+    if(e.target.closest('button, a, input')){ if(e.detail>0) setTimeout(()=>document.activeElement && document.activeElement.blur(),0); return; }
+    next();
+  });
+
+  document.addEventListener('keydown', e=>{
+    if(e.target.matches && e.target.matches('input, textarea')) return;
+    const k = e.key;
+    if(help.classList.contains('open')){ if(k==='Escape'||k==='?') help.classList.remove('open'); return; }
+    if(['ArrowRight','PageDown',' ','Enter'].includes(k)){ if(k==='Enter' && e.target.closest && e.target.closest('button')) return; e.preventDefault(); next(); }
+    else if(['ArrowLeft','PageUp','Backspace'].includes(k)){ e.preventDefault(); prev(); }
+    else if(k==='Home') go(0); else if(k==='End') go(total-1);
+    else if(k==='d'||k==='D') setDraw(!document.body.classList.contains('drawing'));
+    else if(k==='c'||k==='C') clearInk();
+    else if(k==='b'||k==='B') document.getElementById('bar').classList.toggle('hidden');
+    else if(k==='f'||k==='F') full();
+    else if(k==='t'||k==='T') theme();
+    else if(k==='?'||k==='h'||k==='H') help.classList.add('open');
+    else if(k==='Escape') setDraw(false);
+    else if(document.body.classList.contains('drawing') && ['1','2','3','4'].includes(k)) setPen(['blue','red','green','hl'][Number(k)-1]);
+  });
+
+  /* touch swipe */
+  let tx=null; stage.addEventListener('touchstart',e=>{ if(!document.body.classList.contains('drawing')) tx=e.touches[0].clientX; },{passive:true});
+  stage.addEventListener('touchend',e=>{ if(tx===null) return; const dx=e.changedTouches[0].clientX-tx; if(Math.abs(dx)>60){ dx<0?next():prev(); } tx=null; },{passive:true});
+
+  window.deck = { next, prev, go, steps: ()=>maxStep(slides[s]) };
+  const h = parseInt((location.hash||'').slice(1),10);
+  s = (h>=1 && h<=total) ? h-1 : 0;
+  render();
+})();
+</script>
+</body>
+</html>
